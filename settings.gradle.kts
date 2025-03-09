@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "HealthConnectPlugin"
+rootProject.name = "UnityHealthPlugin"
 include(":healthconnectlibrary")
