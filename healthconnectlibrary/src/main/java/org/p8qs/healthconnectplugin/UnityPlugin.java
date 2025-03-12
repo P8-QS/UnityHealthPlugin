@@ -3,17 +3,15 @@ package org.p8qs.healthconnectplugin;
 import android.content.Context;
 
 import androidx.activity.ComponentActivity;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.health.connect.client.HealthConnectClient;
-import androidx.health.connect.client.permission.HealthPermission;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.time.TimeRangeFilter;
 
+import com.unity3d.player.UnityPlayer;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import kotlin.jvm.JvmClassMappingKt;
 
@@ -23,68 +21,66 @@ public class UnityPlugin extends ComponentActivity {
     private final Context _context;
     private final Logger _logger = new Logger("HealthConnectPlugin");
 
+
     public UnityPlugin(Context context) {
         _context = context;
-
-        if (IsHealthClientAvailable()) {
-            _healthConnectClient = HealthConnectClient.getOrCreate(context);
-            _logger.i("HealthConnectClient is initialized!");
-        }
     }
 
-    private boolean IsHealthClientAvailable() {
+    public void CheckHealthConnectAvailability(
+            final String objectName,
+            final String unavailableCallbackName,
+            final String updateCallbackName,
+            final String availableCallbackName
+    ) {
         String providerPackageName = "com.google.android.apps.healthdata";
         int status = HealthConnectClient.getSdkStatus(_context, providerPackageName);
 
         if (status == HealthConnectClient.SDK_UNAVAILABLE) {
-            _logger.i("Health Connect SDK is unavailable.");
-            return false;
+            _logger.d("Health Connect SDK is unavailable");
+            UnityPlayer.UnitySendMessage(objectName, unavailableCallbackName, "SDK_UNAVAILABLE");
         }
 
         if (status == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
-            _logger.i("Health Connect requires an update.");
-            return false;
+            _logger.d("Health Connect requires an update");
+            UnityPlayer.UnitySendMessage(objectName, updateCallbackName, "SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED");
         }
 
         if (status == HealthConnectClient.SDK_AVAILABLE) {
-            _logger.i("Health Connect SDK is available.");
-            return true;
+            _logger.d("Health Connect SDK is available. Client initialized");
+            _healthConnectClient = HealthConnectClient.getOrCreate(_context);
+            UnityPlayer.UnitySendMessage(objectName, availableCallbackName, "SDK_AVAILABLE");
         }
-
-        return false;
     }
 
-    private CompletableFuture<Integer> HasPermissionsAsync() {
-        CompletableFuture<Integer> result = new CompletableFuture<>();
-
+    public void GetPermissionsStatus(
+            final String objectName,
+            final String permissionsCallbackName,
+            final String[] requiredPermissions
+    ) {
         if (_healthConnectClient == null) {
-            result.complete(0);
-            return result;
+            UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "");
         }
 
-        Set<String> permissions = Set.of(
-                HealthPermission.getReadPermission(JvmClassMappingKt.getKotlinClass(StepsRecord.class))
-        );
-
+        var permissions = PermissionMapper.Map(requiredPermissions);
         var permissionController = _healthConnectClient.getPermissionController();
         HealthConnectHelper.getGrantedPermissionsFuture(permissionController)
                 .thenAccept(grants -> {
-                    result.complete(grants.containsAll(permissions) ? 1 : 0);
+                    _logger.i("Received granted permissions");
+                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, grants.toString());
                 })
                 .exceptionally(e -> {
                     _logger.e(e.toString());
-                    result.complete(0);
+                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "none");
                     return null;
                 });
-
-        return result;
     }
 
-    public int HasPermissions() {
-        return HasPermissionsAsync().join();
-    }
-
-    public void ReadStepsDay() {
+    public void ReadHealthRecords(
+            final String objectName,
+            final String callbackName,
+            final RecordType recordType,
+            final TimeRangeFilter timeSpan
+    ) {
         _logger.i("Start of ReadStepsDay");
         var request = new ReadRecordsRequest<StepsRecord>(
                 JvmClassMappingKt.getKotlinClass(StepsRecord.class),
@@ -94,8 +90,6 @@ public class UnityPlugin extends ComponentActivity {
                 100,
                 null
         );
-
-        _logger.i("Reading records...");
 
         try {
             HealthConnectHelper.readRecordsFuture(_healthConnectClient, request)
@@ -117,7 +111,6 @@ public class UnityPlugin extends ComponentActivity {
         catch (Exception e) {
             _logger.e(e.toString());
         }
-        _logger.i("END OF READSTEPSDAY");
     }
 
     private void OnReadStepsPermissionGranted() {

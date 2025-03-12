@@ -32,9 +32,13 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.connect.client)
     implementation(libs.core.ktx)
     implementation(libs.activity.ktx)
+    implementation(libs.gson)
+    compileOnly(fileTree(mapOf(
+        "dir" to "libs",
+        "include" to listOf("*.aar", "*.jar")
+    )))
 }
