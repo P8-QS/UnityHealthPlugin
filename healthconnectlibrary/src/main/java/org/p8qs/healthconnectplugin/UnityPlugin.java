@@ -4,10 +4,12 @@ import android.content.Context;
 
 import androidx.activity.ComponentActivity;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.time.TimeRangeFilter;
 
+import com.google.gson.Gson;
 import com.unity3d.player.UnityPlayer;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,7 @@ public class UnityPlugin extends ComponentActivity {
 
     private final Context _context;
     private final Logger _logger = new Logger("HealthConnectPlugin");
+    private final Gson _gson = new Gson();
 
 
     public UnityPlugin(Context context) {
@@ -52,68 +55,82 @@ public class UnityPlugin extends ComponentActivity {
         }
     }
 
-    public void GetPermissionsStatus(
-            final String objectName,
-            final String permissionsCallbackName,
-            final String[] requiredPermissions
-    ) {
-        if (_healthConnectClient == null) {
-            UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "");
-        }
-
-        var permissions = PermissionMapper.Map(requiredPermissions);
-        var permissionController = _healthConnectClient.getPermissionController();
-        HealthConnectHelper.getGrantedPermissionsFuture(permissionController)
-                .thenAccept(grants -> {
-                    _logger.i("Received granted permissions");
-                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, grants.toString());
-                })
-                .exceptionally(e -> {
-                    _logger.e(e.toString());
-                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "none");
-                    return null;
-                });
-    }
-
-    public void ReadHealthRecords(
+    public void ReadStepsRecords(
             final String objectName,
             final String callbackName,
-            final RecordType recordType,
-            final TimeRangeFilter timeSpan
+            final TimeRangeFilter timeRange
     ) {
-        _logger.i("Start of ReadStepsDay");
         var request = new ReadRecordsRequest<StepsRecord>(
                 JvmClassMappingKt.getKotlinClass(StepsRecord.class),
-                TimeRangeFilter.between(LocalDateTime.now().minusMonths(1), LocalDateTime.now()),
+                timeRange,
                 Collections.emptySet(),
                 true,
                 100,
                 null
         );
+        ReadHealthRecords(objectName, callbackName, request);
+    }
+
+    private<T extends Record> void ReadHealthRecords(
+            final String objectName,
+            final String callbackName,
+            final ReadRecordsRequest<T> request
+    ) {
+        _logger.d("Sending health data read request");
 
         try {
             HealthConnectHelper.readRecordsFuture(_healthConnectClient, request)
                     .thenAccept(response -> {
-                        _logger.i("GOT RESPONSE!");
-                        _logger.i(response.toString());
-                        _logger.i("List size: " + response.getRecords().size());
-                        _logger.i(response.getRecords().toString());
+                        _logger.d("Received health data read response!");
+                        _logger.d(response.toString());
+                        _logger.d("List size: " + response.getRecords().size());
+                        _logger.d(response.getRecords().toString());
 
-                        response.getRecords().forEach(record -> {
-                            _logger.i(record.toString());
-                        });
+                        var responseJson = _gson.toJson(response.getRecords());
+                        UnityPlayer.UnitySendMessage(objectName, callbackName, responseJson);
                     })
                     .exceptionally(e -> {
                         _logger.e(e.toString());
                         return null;
-                    }).join();
+                    });
         }
         catch (Exception e) {
             _logger.e(e.toString());
         }
     }
 
-    private void OnReadStepsPermissionGranted() {
 
-    }
+//        var request = new ReadRecordsRequest<StepsRecord>(
+//                JvmClassMappingKt.getKotlinClass(StepsRecord.class),
+//                TimeRangeFilter.between(LocalDateTime.now().minusMonths(1), LocalDateTime.now()),
+//                Collections.emptySet(),
+//                true,
+//                100,
+//                null
+//        );
+
+
+//    public void GetPermissionsStatus(
+//            final String objectName,
+//            final String permissionsCallbackName,
+//            final String[] requiredPermissions
+//    ) {
+//        if (_healthConnectClient == null) {
+//            UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "");
+//        }
+//
+//        var permissions = PermissionMapper.Map(requiredPermissions);
+//        var permissionController = _healthConnectClient.getPermissionController();
+//        HealthConnectHelper.getGrantedPermissionsFuture(permissionController)
+//                .thenAccept(grants -> {
+//                    _logger.i("Received granted permissions");
+//                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, grants.toString());
+//                })
+//                .exceptionally(e -> {
+//                    _logger.e(e.toString());
+//                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "none");
+//                    return null;
+//                });
+//    }
+
 }
