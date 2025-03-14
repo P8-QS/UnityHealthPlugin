@@ -5,14 +5,18 @@ import android.content.Context;
 import androidx.activity.ComponentActivity;
 import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.records.Record;
+import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.time.TimeRangeFilter;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.unity3d.player.UnityPlayer;
 
-import java.time.LocalDateTime;
+import org.p8qs.healthconnectplugin.serializers.SleepSessionRecordSerializer;
+import org.p8qs.healthconnectplugin.serializers.StepsRecordSerializer;
+
 import java.util.Collections;
 
 import kotlin.jvm.JvmClassMappingKt;
@@ -22,11 +26,18 @@ public class UnityPlugin extends ComponentActivity {
 
     private final Context _context;
     private final Logger _logger = new Logger("HealthConnectPlugin");
-    private final Gson _gson = new Gson();
+    private final Gson _gson;
 
 
     public UnityPlugin(Context context) {
         _context = context;
+
+        // TODO: Write serializer for Metadata class
+        // TODO: Write serializer for SleepSessionRecord.Stage class
+        _gson = new GsonBuilder()
+                .registerTypeAdapter(StepsRecord.class, new StepsRecordSerializer())
+                .registerTypeAdapter(SleepSessionRecord.class, new SleepSessionRecordSerializer())
+                .create();
     }
 
     public void CheckHealthConnectAvailability(
@@ -55,38 +66,27 @@ public class UnityPlugin extends ComponentActivity {
         }
     }
 
-    public void ReadStepsRecords(
+    public void ReadHealthRecords(
+            final TimeRangeFilter timeRangeFilter,
+            final String recordType,
             final String objectName,
-            final String callbackName,
-            final TimeRangeFilter timeRange
+            final String callbackName
     ) {
-        var request = new ReadRecordsRequest<StepsRecord>(
-                JvmClassMappingKt.getKotlinClass(StepsRecord.class),
-                timeRange,
-                Collections.emptySet(),
-                true,
-                100,
-                null
-        );
-        ReadHealthRecords(objectName, callbackName, request);
-    }
+        var request = RecordTypeMapper.Map(recordType, timeRangeFilter);
 
-    private<T extends Record> void ReadHealthRecords(
-            final String objectName,
-            final String callbackName,
-            final ReadRecordsRequest<T> request
-    ) {
+        if (request == null) {
+            _logger.e("Invalid health record type");
+            return;
+        }
+
         _logger.d("Sending health data read request");
 
         try {
             HealthConnectHelper.readRecordsFuture(_healthConnectClient, request)
                     .thenAccept(response -> {
                         _logger.d("Received health data read response!");
-                        _logger.d(response.toString());
-                        _logger.d("List size: " + response.getRecords().size());
-                        _logger.d(response.getRecords().toString());
 
-                        var responseJson = _gson.toJson(response.getRecords());
+                        var responseJson = _gson.toJson(response.getRecords().toArray());
                         UnityPlayer.UnitySendMessage(objectName, callbackName, responseJson);
                     })
                     .exceptionally(e -> {
@@ -98,39 +98,4 @@ public class UnityPlugin extends ComponentActivity {
             _logger.e(e.toString());
         }
     }
-
-
-//        var request = new ReadRecordsRequest<StepsRecord>(
-//                JvmClassMappingKt.getKotlinClass(StepsRecord.class),
-//                TimeRangeFilter.between(LocalDateTime.now().minusMonths(1), LocalDateTime.now()),
-//                Collections.emptySet(),
-//                true,
-//                100,
-//                null
-//        );
-
-
-//    public void GetPermissionsStatus(
-//            final String objectName,
-//            final String permissionsCallbackName,
-//            final String[] requiredPermissions
-//    ) {
-//        if (_healthConnectClient == null) {
-//            UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "");
-//        }
-//
-//        var permissions = PermissionMapper.Map(requiredPermissions);
-//        var permissionController = _healthConnectClient.getPermissionController();
-//        HealthConnectHelper.getGrantedPermissionsFuture(permissionController)
-//                .thenAccept(grants -> {
-//                    _logger.i("Received granted permissions");
-//                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, grants.toString());
-//                })
-//                .exceptionally(e -> {
-//                    _logger.e(e.toString());
-//                    UnityPlayer.UnitySendMessage(objectName, permissionsCallbackName, "none");
-//                    return null;
-//                });
-//    }
-
 }
