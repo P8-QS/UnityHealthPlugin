@@ -79,7 +79,7 @@ public class UnityPlugin extends ComponentActivity {
             return;
         }
 
-        _logger.d("Sending health data read request");
+        _logger.d(String.format("Sending health data read request. RecordType: %s", recordType));
 
         try {
             HealthConnectHelper.readRecordsFuture(_healthConnectClient, request)
