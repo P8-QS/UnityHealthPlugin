@@ -3,17 +3,21 @@ package org.p8qs.healthconnectplugin;
 import android.content.Context;
 
 import androidx.activity.ComponentActivity;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.health.connect.client.HealthConnectClient;
-import androidx.health.connect.client.permission.HealthPermission;
+import androidx.health.connect.client.records.Record;
+import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.time.TimeRangeFilter;
 
-import java.time.LocalDateTime;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.unity3d.player.UnityPlayer;
+
+import org.p8qs.healthconnectplugin.serializers.SleepSessionRecordSerializer;
+import org.p8qs.healthconnectplugin.serializers.StepsRecordSerializer;
+
 import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import kotlin.jvm.JvmClassMappingKt;
 
@@ -22,105 +26,76 @@ public class UnityPlugin extends ComponentActivity {
 
     private final Context _context;
     private final Logger _logger = new Logger("HealthConnectPlugin");
+    private final Gson _gson;
+
 
     public UnityPlugin(Context context) {
         _context = context;
 
-        if (IsHealthClientAvailable()) {
-            _healthConnectClient = HealthConnectClient.getOrCreate(context);
-            _logger.i("HealthConnectClient is initialized!");
-        }
+        // TODO: Write serializer for Metadata class
+        // TODO: Write serializer for SleepSessionRecord.Stage class
+        _gson = new GsonBuilder()
+                .registerTypeAdapter(StepsRecord.class, new StepsRecordSerializer())
+                .registerTypeAdapter(SleepSessionRecord.class, new SleepSessionRecordSerializer())
+                .create();
     }
 
-    private boolean IsHealthClientAvailable() {
+    public void CheckHealthConnectAvailability(
+            final String objectName,
+            final String unavailableCallbackName,
+            final String updateCallbackName,
+            final String availableCallbackName
+    ) {
         String providerPackageName = "com.google.android.apps.healthdata";
         int status = HealthConnectClient.getSdkStatus(_context, providerPackageName);
 
         if (status == HealthConnectClient.SDK_UNAVAILABLE) {
-            _logger.i("Health Connect SDK is unavailable.");
-            return false;
+            _logger.d("Health Connect SDK is unavailable");
+            UnityPlayer.UnitySendMessage(objectName, unavailableCallbackName, "SDK_UNAVAILABLE");
         }
 
         if (status == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
-            _logger.i("Health Connect requires an update.");
-            return false;
+            _logger.d("Health Connect requires an update");
+            UnityPlayer.UnitySendMessage(objectName, updateCallbackName, "SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED");
         }
 
         if (status == HealthConnectClient.SDK_AVAILABLE) {
-            _logger.i("Health Connect SDK is available.");
-            return true;
+            _logger.d("Health Connect SDK is available. Client initialized");
+            _healthConnectClient = HealthConnectClient.getOrCreate(_context);
+            UnityPlayer.UnitySendMessage(objectName, availableCallbackName, "SDK_AVAILABLE");
+        }
+    }
+
+    public void ReadHealthRecords(
+            final TimeRangeFilter timeRangeFilter,
+            final String recordType,
+            final String objectName,
+            final String callbackName
+    ) {
+        var request = RecordTypeMapper.Map(recordType, timeRangeFilter);
+
+        if (request == null) {
+            _logger.e("Invalid health record type");
+            return;
         }
 
-        return false;
-    }
-
-    private CompletableFuture<Integer> HasPermissionsAsync() {
-        CompletableFuture<Integer> result = new CompletableFuture<>();
-
-        if (_healthConnectClient == null) {
-            result.complete(0);
-            return result;
-        }
-
-        Set<String> permissions = Set.of(
-                HealthPermission.getReadPermission(JvmClassMappingKt.getKotlinClass(StepsRecord.class))
-        );
-
-        var permissionController = _healthConnectClient.getPermissionController();
-        HealthConnectHelper.getGrantedPermissionsFuture(permissionController)
-                .thenAccept(grants -> {
-                    result.complete(grants.containsAll(permissions) ? 1 : 0);
-                })
-                .exceptionally(e -> {
-                    _logger.e(e.toString());
-                    result.complete(0);
-                    return null;
-                });
-
-        return result;
-    }
-
-    public int HasPermissions() {
-        return HasPermissionsAsync().join();
-    }
-
-    public void ReadStepsDay() {
-        _logger.i("Start of ReadStepsDay");
-        var request = new ReadRecordsRequest<StepsRecord>(
-                JvmClassMappingKt.getKotlinClass(StepsRecord.class),
-                TimeRangeFilter.between(LocalDateTime.now().minusMonths(1), LocalDateTime.now()),
-                Collections.emptySet(),
-                true,
-                100,
-                null
-        );
-
-        _logger.i("Reading records...");
+        _logger.d(String.format("Sending health data read request. RecordType: %s", recordType));
 
         try {
             HealthConnectHelper.readRecordsFuture(_healthConnectClient, request)
                     .thenAccept(response -> {
-                        _logger.i("GOT RESPONSE!");
-                        _logger.i(response.toString());
-                        _logger.i("List size: " + response.getRecords().size());
-                        _logger.i(response.getRecords().toString());
+                        _logger.d("Received health data read response!");
 
-                        response.getRecords().forEach(record -> {
-                            _logger.i(record.toString());
-                        });
+                        var responseJson = _gson.toJson(response.getRecords().toArray());
+                        UnityPlayer.UnitySendMessage(objectName, callbackName, responseJson);
                     })
                     .exceptionally(e -> {
                         _logger.e(e.toString());
                         return null;
-                    }).join();
+                    });
         }
         catch (Exception e) {
             _logger.e(e.toString());
         }
-        _logger.i("END OF READSTEPSDAY");
-    }
-
-    private void OnReadStepsPermissionGranted() {
-
     }
 }

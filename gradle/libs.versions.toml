@@ -10,17 +10,19 @@ playServicesTasks = "18.2.0"
 kotlin = "2.1.10"
 coreKtx = "1.15.0"
 activityKtx = "1.10.1"
+gson = "2.12.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 connect-client = { group = "androidx.health.connect", name = "connect-client", version.ref = "connectClient" }
 play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "playServicesTasks" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

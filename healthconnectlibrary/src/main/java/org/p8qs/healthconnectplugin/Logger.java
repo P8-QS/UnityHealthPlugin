@@ -12,11 +12,8 @@ public class Logger {
     public int i(String msg) {
         return Log.i(_tag, msg);
     }
-
-    public int e(String msg) {
-        return Log.e(_tag, msg);
-    }
-
+    public int w(String msg) { return Log.w(_tag, msg); }
+    public int e(String msg) { return Log.e(_tag, msg); }
     public int d(String msg) {
         return Log.d(_tag, msg);
     }
