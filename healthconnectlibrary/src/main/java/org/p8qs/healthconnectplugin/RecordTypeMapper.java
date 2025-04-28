@@ -1,6 +1,7 @@
 package org.p8qs.healthconnectplugin;
 
 
+import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.request.ReadRecordsRequest;
@@ -25,6 +26,15 @@ public class RecordTypeMapper {
             case "SLEEP_SESSION":
                 return new ReadRecordsRequest<>(
                         JvmClassMappingKt.getKotlinClass(SleepSessionRecord.class),
+                        timeRangeFilter,
+                        Collections.emptySet(),
+                        true,
+                        100,
+                        null
+                );
+            case "EXERCISE_SESSION":
+                return new ReadRecordsRequest<>(
+                        JvmClassMappingKt.getKotlinClass(ExerciseSessionRecord.class),
                         timeRangeFilter,
                         Collections.emptySet(),
                         true,

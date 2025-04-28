@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.activity.ComponentActivity;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
@@ -14,6 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.unity3d.player.UnityPlayer;
 
+import org.p8qs.healthconnectplugin.serializers.ExerciseSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.SleepSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.StepsRecordSerializer;
 
@@ -37,6 +39,7 @@ public class UnityPlugin extends ComponentActivity {
         _gson = new GsonBuilder()
                 .registerTypeAdapter(StepsRecord.class, new StepsRecordSerializer())
                 .registerTypeAdapter(SleepSessionRecord.class, new SleepSessionRecordSerializer())
+                .registerTypeAdapter(ExerciseSessionRecord.class, new ExerciseSessionRecordSerializer())
                 .create();
     }
 

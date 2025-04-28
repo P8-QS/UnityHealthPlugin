@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "org.p8qs.healthconnectplugin"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26

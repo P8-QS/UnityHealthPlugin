@@ -2,5 +2,6 @@ package org.p8qs.healthconnectplugin;
 
 public enum RecordType {
     STEPS,
-    SLEEP_SESSION
+    SLEEP_SESSION,
+    EXERCISE_SESSION
 }
