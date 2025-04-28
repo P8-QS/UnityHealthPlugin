@@ -5,10 +5,8 @@ import android.content.Context;
 import androidx.activity.ComponentActivity;
 import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
-import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
-import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.time.TimeRangeFilter;
 
 import com.google.gson.Gson;
@@ -18,10 +16,6 @@ import com.unity3d.player.UnityPlayer;
 import org.p8qs.healthconnectplugin.serializers.ExerciseSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.SleepSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.StepsRecordSerializer;
-
-import java.util.Collections;
-
-import kotlin.jvm.JvmClassMappingKt;
 
 public class UnityPlugin extends ComponentActivity {
     private HealthConnectClient _healthConnectClient;
