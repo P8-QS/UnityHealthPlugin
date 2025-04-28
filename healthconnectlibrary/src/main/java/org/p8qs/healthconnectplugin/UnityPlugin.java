@@ -27,7 +27,7 @@ public class UnityPlugin extends ComponentActivity {
     private HealthConnectClient _healthConnectClient;
 
     private final Context _context;
-    private final Logger _logger = new Logger("HealthConnectPlugin");
+    private final Logger _logger = new Logger("HCP:Plugin");
     private final Gson _gson;
 
 
