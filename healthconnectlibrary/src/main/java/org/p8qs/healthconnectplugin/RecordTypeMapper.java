@@ -1,11 +1,11 @@
 package org.p8qs.healthconnectplugin;
 
-
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord;
 import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
 import androidx.health.connect.client.records.Vo2MaxRecord;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.time.TimeRangeFilter;
@@ -56,6 +56,15 @@ public class RecordTypeMapper {
             case RecordType.ACTIVE_CALORIES_BURNED:
                 return new ReadRecordsRequest<>(
                         JvmClassMappingKt.getKotlinClass(ActiveCaloriesBurnedRecord.class),
+                        timeRangeFilter,
+                        Collections.emptySet(),
+                        false,
+                        100,
+                        null
+                );
+            case RecordType.TOTAL_CALORIES_BURNED:
+                return new ReadRecordsRequest<>(
+                        JvmClassMappingKt.getKotlinClass(TotalCaloriesBurnedRecord.class),
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
