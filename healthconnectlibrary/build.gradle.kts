@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.activity.ktx)
     implementation(libs.gson)
+    implementation(libs.games.activity)
     compileOnly(fileTree(mapOf(
         "dir" to "libs",
         "include" to listOf("*.aar", "*.jar")

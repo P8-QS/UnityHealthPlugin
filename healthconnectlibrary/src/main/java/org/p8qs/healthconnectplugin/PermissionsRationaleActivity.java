@@ -4,16 +4,17 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import org.p8qs.healthconnectplugin.unity.UnityPlayerActivity;
 
-public class PermissionsRationaleActivity extends AppCompatActivity {
+public class PermissionsRationaleActivity extends UnityPlayerActivity {
     private final Logger _logger = new Logger("HCP:PRA");
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        _logger.w("CALLED ACTIVITY!");
         Intent incomingIntent = getIntent();
         String action = incomingIntent != null ? incomingIntent.getAction() : null;
 
