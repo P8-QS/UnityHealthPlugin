@@ -14,7 +14,6 @@ public class PermissionsRationaleActivity extends UnityPlayerActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        _logger.w("CALLED ACTIVITY!");
         Intent incomingIntent = getIntent();
         String action = incomingIntent != null ? incomingIntent.getAction() : null;
 
