@@ -1,9 +1,13 @@
 package org.p8qs.healthconnectplugin;
 
+import android.app.Activity;
 import android.content.Context;
+import android.health.connect.HealthPermissions;
 
 import androidx.activity.ComponentActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.health.connect.client.HealthConnectClient;
+import androidx.health.connect.client.PermissionController;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.StepsRecord;
@@ -16,6 +20,8 @@ import com.unity3d.player.UnityPlayer;
 import org.p8qs.healthconnectplugin.serializers.ExerciseSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.SleepSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.StepsRecordSerializer;
+
+import java.util.Arrays;
 
 public class UnityPlugin extends ComponentActivity {
     private HealthConnectClient _healthConnectClient;
@@ -93,6 +99,19 @@ public class UnityPlugin extends ComponentActivity {
         }
         catch (Exception e) {
             _logger.e(e.toString());
+        }
+    }
+
+    public void RequestPermissions(Activity activity) {
+
+        _logger.w("REQUESTPERMISSIONS");
+        if (activity instanceof FragmentActivity) {
+            _logger.w("IT WAS INSTANCE OF FRAGMENTACTIVITY!");
+            FragmentActivity fa = (FragmentActivity) activity;
+            fa.getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(new PermissionsFragment(), "PermissionsFragment")
+                    .commit();
         }
     }
 }
