@@ -18,7 +18,7 @@ object HealthConnectHelper {
         request: ReadRecordsRequest<T>
     ): CompletableFuture<ReadRecordsResponse<T>> {
         return CoroutineScope(Dispatchers.IO).future {
-            client.readRecords(request)  // Calls suspend function in coroutine
+            client.readRecords(request)
         }
     }
 
