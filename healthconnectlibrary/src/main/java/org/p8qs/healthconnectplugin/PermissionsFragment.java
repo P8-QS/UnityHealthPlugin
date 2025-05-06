@@ -130,6 +130,7 @@ public class PermissionsFragment extends Fragment {
     private void onPermissionResult(Set<String> grantedPermissions) {
         for (String permission : grantedPermissions) {
             readDataRecords(permission, 7, true);
+            readDataRecords(permission, 1, false);
         }
 
         if (grantedPermissions.containsAll(Arrays.asList(PERMISSIONS))) {
