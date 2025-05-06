@@ -24,7 +24,7 @@ public class RecordTypeMapper {
             this.callback = callback;
         }
     }
-    public static MappedRecordType Map(String recordType, TimeRangeFilter timeRangeFilter) {
+    public static MappedRecordType Map(String recordType, TimeRangeFilter timeRangeFilter, boolean isHistory) {
         switch (recordType) {
             case RecordType.STEPS:
                 return new MappedRecordType(
@@ -35,7 +35,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnStepsRecordsReceived"
+                    ), isHistory ? "OnStepsHistoryReceived" : "OnStepsRecordsReceived"
                 );
             case RecordType.SLEEP_SESSION:
                 return new MappedRecordType(
@@ -46,7 +46,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnSleepRecordsReceived"
+                    ), isHistory ? "OnSleepHistoryReceived" : "OnSleepRecordsReceived"
                 );
             case RecordType.EXERCISE_SESSION:
                 return new MappedRecordType(
@@ -57,7 +57,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnExerciseRecordsReceived"
+                    ), isHistory ? "OnExerciseHistoryReceived" : "OnExerciseRecordsReceived"
                 );
             case RecordType.HEART_RATE_VARIABILITY_RMSSD:
                 return new MappedRecordType(
@@ -68,7 +68,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnHeartRateVariabilityRecordsReceived"
+                    ), isHistory ? "OnHrvHistoryReceived" : "OnHeartRateVariabilityRecordsReceived"
                 );
             case RecordType.ACTIVE_CALORIES_BURNED:
                 return new MappedRecordType(
@@ -79,7 +79,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnActiveCaloriesRecordsReceived"
+                    ), isHistory ? "OnActiveCaloriesHistoryReceived" : "OnActiveCaloriesRecordsReceived"
                 );
             case RecordType.TOTAL_CALORIES_BURNED:
                 return new MappedRecordType(
@@ -90,7 +90,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnTotalCaloriesRecordsReceived"
+                    ), isHistory ? "OnTotalCaloriesHistoryReceived" : "OnTotalCaloriesRecordsReceived"
                 );
             case RecordType.VO2_MAX:
                 return new MappedRecordType(
@@ -101,7 +101,7 @@ public class RecordTypeMapper {
                         false,
                         100,
                         null
-                    ), "OnVo2RecordsReceived"
+                    ), isHistory ? "OnVo2HistoryReceived" : "OnVo2RecordsReceived"
                 );
             default:
                 return null;

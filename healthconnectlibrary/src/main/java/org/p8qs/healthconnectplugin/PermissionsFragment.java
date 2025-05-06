@@ -72,7 +72,6 @@ public class PermissionsFragment extends Fragment {
                 .registerTypeAdapter(TotalCaloriesBurnedRecord.class, new TotalCaloriesBurnedRecordSerializer())
                 .create();
 
-
         var requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract();
 
         permissionLauncher = registerForActivityResult(
@@ -80,27 +79,57 @@ public class PermissionsFragment extends Fragment {
                 this::onPermissionResult
         );
 
-        permissionLauncher.launch(Set.of(PERMISSIONS));
+
+        HealthConnectHelper
+            .getGrantedPermissionsFuture(_healthConnectClient)
+                .thenAccept(granted -> {
+                    if (granted.containsAll(Set.of(PERMISSIONS))) {
+                        // Permissions are already granted
+                        _logger.d("USER ALREADY HAS PERMISSIONS");
+
+                        for (String permission : granted) {
+                            readDataRecords(permission, 1, false);
+                        }
+                    }
+                    else {
+                        // Request permissions from user
+                        permissionLauncher.launch(Set.of(PERMISSIONS));
+                    }
+                    cleanup();
+                })
+                .exceptionally(e -> {
+                    _logger.e(e.toString());
+                    return null;
+                });
     }
 
     public void setHealthConnectClient(HealthConnectClient client) {
         _healthConnectClient = client;
     }
 
+    private void cleanup() {
+        // Clean up: remove this fragment from the activity
+        getParentFragmentManager().beginTransaction().remove(this).commit();
+    }
+
+    private void readDataRecords(String permission, int minusDays, boolean isHistory) {
+        String recordType = PermissionToRecordType.get(permission);
+
+        if (recordType != null) {
+            LocalDateTime start = LocalDate.now().minusDays(minusDays).atStartOfDay();
+            LocalDateTime end = LocalDate.now().atStartOfDay();
+            var tmf = TimeRangeFilter.between(start, end);
+
+            ReadHealthRecords(tmf, recordType, isHistory);
+        }
+        else {
+            _logger.d("No record type mapped for permission: " + permission);
+        }
+    }
+
     private void onPermissionResult(Set<String> grantedPermissions) {
         for (String permission : grantedPermissions) {
-            String recordType = PermissionToRecordType.get(permission);
-
-            if (recordType != null) {
-                LocalDateTime start = LocalDate.now().minusDays(1).atStartOfDay();
-                LocalDateTime end = LocalDate.now().atStartOfDay();
-                var tmf = TimeRangeFilter.between(start, end);
-
-                ReadHealthRecords(tmf, recordType);
-            }
-            else {
-                _logger.d("No record type mapped for permission: " + permission);
-            }
+            readDataRecords(permission, 7, true);
         }
 
         if (grantedPermissions.containsAll(Arrays.asList(PERMISSIONS))) {
@@ -109,15 +138,15 @@ public class PermissionsFragment extends Fragment {
             Toast.makeText(requireContext(), "Some health permissions denied.", Toast.LENGTH_LONG).show();
         }
 
-        // Clean up: remove this fragment from the activity
-        getParentFragmentManager().beginTransaction().remove(this).commit();
+        cleanup();
     }
 
-    public void ReadHealthRecords(
+    private void ReadHealthRecords(
             final TimeRangeFilter timeRangeFilter,
-            final String recordType
+            final String recordType,
+            final boolean isHistory
     ) {
-        var mappedValue = RecordTypeMapper.Map(recordType, timeRangeFilter);
+        var mappedValue = RecordTypeMapper.Map(recordType, timeRangeFilter, isHistory);
 
         if (mappedValue == null || mappedValue.request == null) {
             _logger.e("Invalid health record type");
