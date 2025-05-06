@@ -49,7 +49,6 @@ public class PermissionsFragment extends Fragment {
     private HealthConnectClient _healthConnectClient;
     private ActivityResultLauncher<Set<String>> permissionLauncher;
     private Gson _gson;
-    private final String _providerPackageName = "com.google.android.apps.healthdata";
     private final Logger _logger = new Logger("HCP:PFR");
     private static final Map<String, String> PermissionToRecordType = Map.of(
             "android.permission.health.READ_STEPS", RecordType.STEPS,
@@ -92,10 +91,10 @@ public class PermissionsFragment extends Fragment {
                         }
                     }
                     else {
+                        _logger.d("REQUESTING USER PERMISSIONS");
                         // Request permissions from user
                         permissionLauncher.launch(Set.of(PERMISSIONS));
                     }
-                    cleanup();
                 })
                 .exceptionally(e -> {
                     _logger.e(e.toString());
