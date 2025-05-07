@@ -24,10 +24,10 @@ object HealthConnectHelper {
 
     @JvmStatic
     fun getGrantedPermissionsFuture(
-        permissionController: PermissionController
+        client: HealthConnectClient
     ): CompletableFuture<Set<String>> {
         return CoroutineScope(Dispatchers.IO).future {
-            permissionController.getGrantedPermissions()
+            client.permissionController.getGrantedPermissions()
         }
     }
 }
