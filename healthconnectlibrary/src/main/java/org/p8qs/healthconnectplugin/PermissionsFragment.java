@@ -22,10 +22,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.unity3d.player.UnityPlayer;
 
+import org.p8qs.healthconnectplugin.serializers.ActiveCaloriesBurnedRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.ExerciseSessionRecordSerializer;
+import org.p8qs.healthconnectplugin.serializers.HeartRateVariabilityRmssdRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.SleepSessionRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.StepsRecordSerializer;
 import org.p8qs.healthconnectplugin.serializers.TotalCaloriesBurnedRecordSerializer;
+import org.p8qs.healthconnectplugin.serializers.Vo2MaxRecordSerializer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,6 +72,9 @@ public class PermissionsFragment extends Fragment {
                 .registerTypeAdapter(SleepSessionRecord.class, new SleepSessionRecordSerializer())
                 .registerTypeAdapter(ExerciseSessionRecord.class, new ExerciseSessionRecordSerializer())
                 .registerTypeAdapter(TotalCaloriesBurnedRecord.class, new TotalCaloriesBurnedRecordSerializer())
+                .registerTypeAdapter(ActiveCaloriesBurnedRecord.class, new ActiveCaloriesBurnedRecordSerializer())
+                .registerTypeAdapter(HeartRateVariabilityRmssdRecord.class, new HeartRateVariabilityRmssdRecordSerializer())
+                .registerTypeAdapter(Vo2MaxRecord.class, new Vo2MaxRecordSerializer())
                 .create();
 
         var requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract();
