@@ -24,6 +24,9 @@ public class RecordTypeMapper {
             this.callback = callback;
         }
     }
+
+    private static final int PageSize = 5000;
+
     public static MappedRecordType Map(String recordType, TimeRangeFilter timeRangeFilter, boolean isHistory) {
         switch (recordType) {
             case RecordType.STEPS:
@@ -33,7 +36,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnStepsHistoryReceived" : "OnStepsRecordsReceived"
                 );
@@ -44,7 +47,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnSleepHistoryReceived" : "OnSleepRecordsReceived"
                 );
@@ -55,7 +58,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnExerciseHistoryReceived" : "OnExerciseRecordsReceived"
                 );
@@ -66,7 +69,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnHrvHistoryReceived" : "OnHeartRateVariabilityRecordsReceived"
                 );
@@ -77,7 +80,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnActiveCaloriesHistoryReceived" : "OnActiveCaloriesRecordsReceived"
                 );
@@ -88,7 +91,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnTotalCaloriesHistoryReceived" : "OnTotalCaloriesRecordsReceived"
                 );
@@ -99,7 +102,7 @@ public class RecordTypeMapper {
                         timeRangeFilter,
                         Collections.emptySet(),
                         false,
-                        100,
+                            PageSize,
                         null
                     ), isHistory ? "OnVo2HistoryReceived" : "OnVo2RecordsReceived"
                 );
